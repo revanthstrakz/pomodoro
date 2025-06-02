@@ -1,0 +1,114 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  lint-and-analyze:
+    name: Lint and Analyze
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.2'
+          channel: 'stable'
+
+      - name: Get dependencies
+        run: flutter pub get
+        
+        
+      # - name: Run flutter format check
+      #   run: dart format --set-exit-if-changed .
+      #   
+        
+      - name: Run flutter analyze
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+        
+
+  build-android:
+    name: Build Android APK
+    needs: lint-and-analyze
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Debug directory structure
+        run: |
+          pwd
+          ls -la
+          find . -name "pubspec.yaml" | sort
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.2'
+          channel: 'stable'
+
+      - name: Get dependencies
+        run: flutter pub get
+        
+        
+      - name: Build APK
+        run: flutter build apk --release --target-platform android-arm64
+        
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: android-arm64-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+  build-windows:
+    name: Build Windows Executable
+    needs: lint-and-analyze
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Debug directory structure
+        run: |
+          echo Current directory:
+          pwd
+          echo Directory contents:
+          dir
+          echo Finding pubspec.yaml files:
+          cmd /c "dir /s /b pubspec.yaml"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.2'
+          channel: 'stable'
+
+      - name: Enable Windows desktop support
+        run: flutter config --enable-windows-desktop
+
+      - name: Get dependencies
+        run: flutter pub get
+        
+
+      - name: Build Windows
+        run: flutter build windows --release
+        
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: windows-x64-exe
+          path: build/windows/x64/runner/Release/
