@@ -25,12 +25,9 @@ class HistoryController extends GetxController {
       history.value = await _pomodoroService.getSessionHistory();
       await loadWeeklyStats();
       await loadMonthlyStats();
-      print('Loaded history: ${history.length} days');
-      for (var day in history) {
-        print('Day: ${day.date} with ${day.sessions.length} sessions');
-      }
+      // Successfully loaded history
     } catch (e) {
-      print('Error loading history: $e');
+      // Error loading history
     } finally {
       isLoading.value = false;
     }
@@ -40,7 +37,7 @@ class HistoryController extends GetxController {
     try {
       weeklyStats.value = await _statisticsService.getWeeklyStats();
     } catch (e) {
-      print('Error loading weekly stats: $e');
+      // Error loading weekly stats
     }
   }
 
@@ -48,7 +45,7 @@ class HistoryController extends GetxController {
     try {
       monthlyStats.value = await _statisticsService.getMonthlyStats();
     } catch (e) {
-      print('Error loading monthly stats: $e');
+      // Error loading monthly stats
     }
   }
 

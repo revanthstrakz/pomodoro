@@ -29,7 +29,7 @@ void main() {
         when(mockStorageService.read(any)).thenReturn(null);
 
         // Act
-        await vibrationService.onInit();
+        vibrationService.onInit();
 
         // Assert
         expect(vibrationService.vibrationEnabled.value, true);
@@ -44,7 +44,7 @@ void main() {
         when(mockStorageService.read('tick_vibration_enabled')).thenReturn(true);
 
         // Act
-        await vibrationService.onInit();
+        vibrationService.onInit();
 
         // Assert
         expect(vibrationService.vibrationEnabled.value, false);

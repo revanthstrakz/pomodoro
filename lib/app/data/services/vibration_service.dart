@@ -35,11 +35,11 @@ class VibrationService extends GetxService {
 
   Future<void> _loadVibrationSettings() async {
     try {
-      vibrationEnabled.value = _storageService.read('vibration_enabled') ?? true;
-      vibrationIntensity.value = _storageService.read('vibration_intensity') ?? 2;
-      tickVibrationEnabled.value = _storageService.read('tick_vibration_enabled') ?? false;
+      vibrationEnabled.value = (_storageService.read('vibration_enabled') as bool?) ?? true;
+      vibrationIntensity.value = (_storageService.read('vibration_intensity') as int?) ?? 2;
+      tickVibrationEnabled.value = (_storageService.read('tick_vibration_enabled') as bool?) ?? false;
     } catch (e) {
-      print('Error loading vibration settings: $e');
+      // Error loading vibration settings
     }
   }
 
@@ -49,7 +49,7 @@ class VibrationService extends GetxService {
       await _storageService.write('vibration_intensity', vibrationIntensity.value);
       await _storageService.write('tick_vibration_enabled', tickVibrationEnabled.value);
     } catch (e) {
-      print('Error saving vibration settings: $e');
+      // Error saving vibration settings
     }
   }
 
@@ -82,8 +82,7 @@ class VibrationService extends GetxService {
         }
       }
     } catch (e) {
-      print('Error vibrating: $e');
-      // Fallback to simple vibration
+      // Error with pattern vibration, fallback to simple vibration
       await _simpleVibrate(vibrationType);
     }
   }
@@ -122,7 +121,7 @@ class VibrationService extends GetxService {
       final adjustedDuration = (duration * (vibrationIntensity.value / 2.0)).round();
       await Vibration.vibrate(duration: adjustedDuration);
     } catch (e) {
-      print('Error with simple vibration: $e');
+      // Error with simple vibration
     }
   }
 
@@ -153,7 +152,7 @@ class VibrationService extends GetxService {
     try {
       return await Vibration.hasVibrator() ?? false;
     } catch (e) {
-      print('Error checking vibration support: $e');
+      // Error checking vibration support
       return false;
     }
   }

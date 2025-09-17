@@ -61,7 +61,7 @@ void main() {
             .thenAnswer((_) async => mockSettings);
 
         // Act
-        await homeController.onInit();
+        homeController.onInit();
 
         // Assert
         expect(homeController.settings.value, mockSettings);

@@ -29,7 +29,7 @@ void main() {
         when(mockStorageService.read(any)).thenReturn(null);
 
         // Act
-        await soundService.onInit();
+        soundService.onInit();
 
         // Assert
         expect(soundService.soundEnabled.value, true);
@@ -48,7 +48,7 @@ void main() {
         when(mockStorageService.read('tick_sound_enabled')).thenReturn(true);
 
         // Act
-        await soundService.onInit();
+        soundService.onInit();
 
         // Assert
         expect(soundService.soundEnabled.value, false);

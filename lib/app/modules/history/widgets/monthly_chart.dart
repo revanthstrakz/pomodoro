@@ -34,7 +34,7 @@ class MonthlyChart extends StatelessWidget {
                   horizontalInterval: 5,
                   getDrawingHorizontalLine: (value) {
                     return FlLine(
-                      color: theme.colorScheme.outline.withOpacity(0.2),
+                      color: theme.colorScheme.outline.withValues(alpha: 0.2),
                       strokeWidth: 1,
                     );
                   },
@@ -115,7 +115,7 @@ class MonthlyChart extends StatelessWidget {
                     ),
                     belowBarData: BarAreaData(
                       show: true,
-                      color: theme.colorScheme.primary.withOpacity(0.1),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
                     ),
                   ),
                   // Work hours line
@@ -140,7 +140,7 @@ class MonthlyChart extends StatelessWidget {
                 ],
                 lineTouchData: LineTouchData(
                   touchTooltipData: LineTouchTooltipData(
-                    tooltipBgColor: theme.colorScheme.surface,
+                    getTooltipColor: (touchedSpot) => theme.colorScheme.surface,
                     tooltipBorder: BorderSide(
                       color: theme.colorScheme.outline,
                     ),

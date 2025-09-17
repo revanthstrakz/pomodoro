@@ -173,7 +173,7 @@ class GoalsWidget extends StatelessWidget {
                 Expanded(
                   child: LinearProgressIndicator(
                     value: progress,
-                    backgroundColor: theme.colorScheme.surfaceVariant,
+                    backgroundColor: theme.colorScheme.surfaceContainerHighest,
                     valueColor: AlwaysStoppedAnimation<Color>(
                       theme.colorScheme.primary,
                     ),

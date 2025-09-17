@@ -62,7 +62,9 @@ class NotificationService extends GetxService {
           _flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>();
 
-      await androidImplementation?.requestNotificationsPermission();
+      if (androidImplementation != null) {
+        await androidImplementation.requestNotificationsPermission();
+      }
     } else if (Platform.isIOS) {
       final IOSFlutterLocalNotificationsPlugin? iosImplementation =
           _flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
@@ -79,13 +81,13 @@ class NotificationService extends GetxService {
   Future<void> _loadNotificationSettings() async {
     try {
       notificationsEnabled.value = 
-          _storageService.read('notifications_enabled') ?? true;
+          (_storageService.read('notifications_enabled') as bool?) ?? true;
       backgroundNotificationsEnabled.value = 
-          _storageService.read('background_notifications_enabled') ?? true;
+          (_storageService.read('background_notifications_enabled') as bool?) ?? true;
       showProgressInNotification.value = 
-          _storageService.read('show_progress_in_notification') ?? true;
+          (_storageService.read('show_progress_in_notification') as bool?) ?? true;
     } catch (e) {
-      print('Error loading notification settings: $e');
+      // Error loading notification settings
     }
   }
 
@@ -95,16 +97,14 @@ class NotificationService extends GetxService {
       await _storageService.write('background_notifications_enabled', backgroundNotificationsEnabled.value);
       await _storageService.write('show_progress_in_notification', showProgressInNotification.value);
     } catch (e) {
-      print('Error saving notification settings: $e');
+      // Error saving notification settings
     }
   }
 
   void _onNotificationTapped(NotificationResponse notificationResponse) {
     final payload = notificationResponse.payload;
     if (payload != null) {
-      // Handle notification tap - could navigate to specific screen
-      print('Notification tapped with payload: $payload');
-      // Navigate to home screen
+      // Handle notification tap - navigate to home screen
       Get.offAllNamed('/home');
     }
   }

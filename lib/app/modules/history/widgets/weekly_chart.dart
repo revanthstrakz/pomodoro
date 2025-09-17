@@ -31,7 +31,7 @@ class WeeklyChart extends StatelessWidget {
                 maxY: _getMaxY(),
                 barTouchData: BarTouchData(
                   touchTooltipData: BarTouchTooltipData(
-                    tooltipBgColor: theme.colorScheme.surface,
+                    getTooltipColor: (group) => theme.colorScheme.surface,
                     tooltipBorder: BorderSide(
                       color: theme.colorScheme.outline,
                     ),
@@ -106,7 +106,7 @@ class WeeklyChart extends StatelessWidget {
                   horizontalInterval: 1,
                   getDrawingHorizontalLine: (value) {
                     return FlLine(
-                      color: theme.colorScheme.outline.withOpacity(0.2),
+                      color: theme.colorScheme.outline.withValues(alpha: 0.2),
                       strokeWidth: 1,
                     );
                   },

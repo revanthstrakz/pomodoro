@@ -42,15 +42,15 @@ class SoundService extends GetxService {
 
   Future<void> _loadSoundSettings() async {
     try {
-      soundEnabled.value = _storageService.read('sound_enabled') ?? true;
-      volume.value = _storageService.read('sound_volume') ?? 0.8;
+      soundEnabled.value = (_storageService.read('sound_enabled') as bool?) ?? true;
+      volume.value = (_storageService.read('sound_volume') as double?) ?? 0.8;
       selectedSessionCompleteSound.value = 
-          _storageService.read('session_complete_sound') ?? 'chime.mp3';
+          (_storageService.read('session_complete_sound') as String?) ?? 'chime.mp3';
       selectedSessionStartSound.value = 
-          _storageService.read('session_start_sound') ?? 'bell.mp3';
-      tickSoundEnabled.value = _storageService.read('tick_sound_enabled') ?? false;
+          (_storageService.read('session_start_sound') as String?) ?? 'bell.mp3';
+      tickSoundEnabled.value = (_storageService.read('tick_sound_enabled') as bool?) ?? false;
     } catch (e) {
-      print('Error loading sound settings: $e');
+      // Error loading sound settings
     }
   }
 
@@ -62,7 +62,7 @@ class SoundService extends GetxService {
       await _storageService.write('session_start_sound', selectedSessionStartSound.value);
       await _storageService.write('tick_sound_enabled', tickSoundEnabled.value);
     } catch (e) {
-      print('Error saving sound settings: $e');
+      // Error saving sound settings
     }
   }
 
@@ -87,16 +87,14 @@ class SoundService extends GetxService {
       await _audioPlayer.setVolume(volume.value);
       await _audioPlayer.play(AssetSource('sounds/$soundFile'));
     } catch (e) {
-      print('Error playing sound: $e');
-      // Fallback to system sound if asset fails
+      // Error playing sound, fallback to system sound
       _playSystemSound(soundType);
     }
   }
 
   void _playSystemSound(SoundType soundType) {
     // Fallback system sounds - this would use platform-specific implementations
-    // For now, we'll just print a message
-    print('Playing system sound for: ${soundType.name}');
+    // In production, this would trigger system notification sounds
   }
 
   Future<void> updateSoundEnabled(bool enabled) async {
@@ -131,7 +129,7 @@ class SoundService extends GetxService {
       await _audioPlayer.setVolume(volume.value);
       await _audioPlayer.play(AssetSource('sounds/$soundFile'));
     } catch (e) {
-      print('Error previewing sound: $e');
+      // Error previewing sound
     }
   }
 
@@ -142,7 +140,7 @@ class SoundService extends GetxService {
       await _audioPlayer.play(AssetSource('sounds/$soundFile'));
       return true;
     } catch (e) {
-      print('Sound test failed for $soundFile: $e');
+      // Sound test failed
       return false;
     }
   }

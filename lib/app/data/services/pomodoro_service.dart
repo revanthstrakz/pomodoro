@@ -50,7 +50,7 @@ class PomodoroService extends GetxService {
             .map((day) => PomodoroDay.fromJson(day as Map<String, dynamic>))
             .toList();
       } catch (e) {
-        print('Error parsing session history: $e');
+        // Error parsing session history
         return [];
       }
     } else {

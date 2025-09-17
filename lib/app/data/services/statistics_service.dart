@@ -118,7 +118,7 @@ class StatisticsService extends GetxService {
 
   Future<void> _loadGoals() async {
     try {
-      final goalsJson = _storageService.read('pomodoro_goals');
+      final goalsJson = _storageService.read('pomodoro_goals') as String?;
       if (goalsJson != null) {
         final List<dynamic> goalsList = json.decode(goalsJson);
         goals.value = goalsList
@@ -126,7 +126,7 @@ class StatisticsService extends GetxService {
             .toList();
       }
     } catch (e) {
-      print('Error loading goals: $e');
+      // Error loading goals
     }
   }
 
@@ -135,7 +135,7 @@ class StatisticsService extends GetxService {
       final goalsJson = json.encode(goals.map((goal) => goal.toJson()).toList());
       await _storageService.write('pomodoro_goals', goalsJson);
     } catch (e) {
-      print('Error saving goals: $e');
+      // Error saving goals
     }
   }
 
@@ -220,9 +220,7 @@ class StatisticsService extends GetxService {
     final monthEnd = DateTime(monthStart.year, monthStart.month + 1, 1);
     
     final history = await _pomodoroService.getSessionHistory();
-    final monthHistory = history.where((day) =>
-        day.date.isAfter(monthStart!.subtract(const Duration(days: 1))) &&
-        day.date.isBefore(monthEnd)).toList();
+    // Filter history for the month (currently unused but available for future features)
 
     int totalSessions = 0;
     int totalWorkHours = 0;

@@ -18,7 +18,7 @@ void callbackDispatcher() {
       }
       return Future.value(true);
     } catch (e) {
-      print('Background task error: $e');
+      // Background task error
       return Future.value(false);
     }
   });
@@ -28,9 +28,6 @@ Future<void> _handleTimerTask(Map<String, dynamic>? inputData) async {
   if (inputData == null) return;
 
   // This would handle timer updates in background
-  // For now, we'll just log the task
-  print('Background timer task executed');
-  
   // In a real implementation, you would:
   // 1. Update the remaining time
   // 2. Check if session is complete
@@ -41,8 +38,6 @@ Future<void> _handleTimerTask(Map<String, dynamic>? inputData) async {
 Future<void> _handleReminderTask(Map<String, dynamic>? inputData) async {
   if (inputData == null) return;
 
-  print('Background reminder task executed');
-  
   // This would send reminder notifications
   // when user hasn't used the app for a while
 }
@@ -72,20 +67,20 @@ class BackgroundService extends GetxService {
         isInDebugMode: false, // Set to true for debugging
       );
     } catch (e) {
-      print('Error initializing background service: $e');
+      // Error initializing background service
     }
   }
 
   Future<void> _loadBackgroundSettings() async {
     try {
       backgroundServiceEnabled.value = 
-          _storageService.read('background_service_enabled') ?? true;
+          (_storageService.read('background_service_enabled') as bool?) ?? true;
       reminderNotificationsEnabled.value = 
-          _storageService.read('reminder_notifications_enabled') ?? true;
+          (_storageService.read('reminder_notifications_enabled') as bool?) ?? true;
       reminderIntervalHours.value = 
-          _storageService.read('reminder_interval_hours') ?? 24;
+          (_storageService.read('reminder_interval_hours') as int?) ?? 24;
     } catch (e) {
-      print('Error loading background settings: $e');
+      // Error loading background settings
     }
   }
 
@@ -95,7 +90,7 @@ class BackgroundService extends GetxService {
       await _storageService.write('reminder_notifications_enabled', reminderNotificationsEnabled.value);
       await _storageService.write('reminder_interval_hours', reminderIntervalHours.value);
     } catch (e) {
-      print('Error saving background settings: $e');
+      // Error saving background settings
     }
   }
 
@@ -131,7 +126,7 @@ class BackgroundService extends GetxService {
         ),
       );
     } catch (e) {
-      print('Error starting background timer task: $e');
+      // Error starting background timer task
     }
   }
 
@@ -139,7 +134,7 @@ class BackgroundService extends GetxService {
     try {
       await Workmanager().cancelByUniqueName(timerTaskName);
     } catch (e) {
-      print('Error stopping background timer task: $e');
+      // Error stopping background timer task
     }
   }
 
@@ -168,7 +163,7 @@ class BackgroundService extends GetxService {
         ),
       );
     } catch (e) {
-      print('Error scheduling reminder notification: $e');
+      // Error scheduling reminder notification
     }
   }
 
@@ -176,7 +171,7 @@ class BackgroundService extends GetxService {
     try {
       await Workmanager().cancelByUniqueName(reminderTaskName);
     } catch (e) {
-      print('Error canceling reminder notification: $e');
+      // Error canceling reminder notification
     }
   }
 
@@ -184,7 +179,7 @@ class BackgroundService extends GetxService {
     try {
       await Workmanager().cancelAll();
     } catch (e) {
-      print('Error canceling all background tasks: $e');
+      // Error canceling all background tasks
     }
   }
 
@@ -245,19 +240,19 @@ class BackgroundService extends GetxService {
 
       await _storageService.write('timer_state', json.encode(timerState));
     } catch (e) {
-      print('Error saving timer state: $e');
+      // Error saving timer state
     }
   }
 
   // Restore timer state when app resumes
   Future<Map<String, dynamic>?> restoreTimerState() async {
     try {
-      final stateJson = _storageService.read('timer_state');
+      final stateJson = _storageService.read('timer_state') as String?;
       if (stateJson != null) {
         return json.decode(stateJson) as Map<String, dynamic>;
       }
     } catch (e) {
-      print('Error restoring timer state: $e');
+      // Error restoring timer state
     }
     return null;
   }
@@ -267,7 +262,7 @@ class BackgroundService extends GetxService {
     try {
       await _storageService.remove('timer_state');
     } catch (e) {
-      print('Error clearing timer state: $e');
+      // Error clearing timer state
     }
   }
 }
