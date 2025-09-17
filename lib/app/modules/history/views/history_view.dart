@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pomodoro/app/data/models/pomodoro_models.dart';
+import 'package:pomodoro/app/data/services/statistics_service.dart';
 import '../controllers/history_controller.dart';
+import '../widgets/weekly_chart.dart';
+import '../widgets/monthly_chart.dart';
+import '../widgets/goals_widget.dart';
 
 class HistoryView extends GetView<HistoryController> {
   const HistoryView({super.key});
@@ -10,7 +14,7 @@ class HistoryView extends GetView<HistoryController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Session History'),
+        title: const Text('Statistics & History'),
         centerTitle: true,
         actions: [
           IconButton(
@@ -24,21 +28,116 @@ class HistoryView extends GetView<HistoryController> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (controller.history.isEmpty) {
-          return _buildEmptyState(context);
-        }
-
         return Column(
           children: [
-            // Statistics card
-            _buildStatisticsCard(context),
-
-            // Session history list
-            Expanded(child: _buildHistoryList(context)),
+            // View selector
+            _buildViewSelector(context),
+            
+            // Content based on selected view
+            Expanded(
+              child: SingleChildScrollView(
+                child: _buildSelectedView(context),
+              ),
+            ),
           ],
         );
       }),
     );
+  }
+
+  Widget _buildViewSelector(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Expanded(
+            child: SegmentedButton<String>(
+              segments: const [
+                ButtonSegment<String>(
+                  value: 'daily',
+                  label: Text('Daily'),
+                  icon: Icon(Icons.today),
+                ),
+                ButtonSegment<String>(
+                  value: 'weekly',
+                  label: Text('Weekly'),
+                  icon: Icon(Icons.view_week),
+                ),
+                ButtonSegment<String>(
+                  value: 'monthly',
+                  label: Text('Monthly'),
+                  icon: Icon(Icons.calendar_month),
+                ),
+                ButtonSegment<String>(
+                  value: 'goals',
+                  label: Text('Goals'),
+                  icon: Icon(Icons.flag),
+                ),
+              ],
+              selected: {controller.selectedView.value},
+              onSelectionChanged: (Set<String> selection) {
+                controller.changeView(selection.first);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSelectedView(BuildContext context) {
+    switch (controller.selectedView.value) {
+      case 'weekly':
+        return _buildWeeklyView(context);
+      case 'monthly':
+        return _buildMonthlyView(context);
+      case 'goals':
+        return _buildGoalsView(context);
+      case 'daily':
+      default:
+        return _buildDailyView(context);
+    }
+  }
+
+  Widget _buildDailyView(BuildContext context) {
+    if (controller.history.isEmpty) {
+      return _buildEmptyState(context);
+    }
+
+    return Column(
+      children: [
+        // Statistics card
+        _buildStatisticsCard(context),
+
+        // Session history list
+        _buildHistoryList(context),
+      ],
+    );
+  }
+
+  Widget _buildWeeklyView(BuildContext context) {
+    return Obx(() {
+      if (controller.weeklyStats.value == null) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      return WeeklyChart(weeklyStats: controller.weeklyStats.value!);
+    });
+  }
+
+  Widget _buildMonthlyView(BuildContext context) {
+    return Obx(() {
+      if (controller.monthlyStats.value == null) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      return MonthlyChart(monthlyStats: controller.monthlyStats.value!);
+    });
+  }
+
+  Widget _buildGoalsView(BuildContext context) {
+    final statisticsService = Get.find<StatisticsService>();
+    return GoalsWidget(statisticsService: statisticsService);
   }
 
   Widget _buildEmptyState(BuildContext context) {
@@ -49,7 +148,7 @@ class HistoryView extends GetView<HistoryController> {
           Icon(
             Icons.history,
             size: 80,
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(

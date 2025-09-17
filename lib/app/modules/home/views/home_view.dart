@@ -82,7 +82,7 @@ class HomeView extends GetView<HomeController> {
                 child: CircularProgressIndicator(
                   value: controller.progress,
                   strokeWidth: 12,
-                  backgroundColor: sessionTypeColor.withOpacity(0.2),
+                  backgroundColor: sessionTypeColor.withValues(alpha: 0.2),
                   color: sessionTypeColor,
                 ),
               ),
