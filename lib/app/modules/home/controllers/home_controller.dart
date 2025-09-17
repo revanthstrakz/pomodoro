@@ -4,9 +4,17 @@ import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
 import 'package:pomodoro/app/data/models/pomodoro_models.dart';
 import 'package:pomodoro/app/data/services/pomodoro_service.dart';
+import 'package:pomodoro/app/data/services/sound_service.dart';
+import 'package:pomodoro/app/data/services/vibration_service.dart';
+import 'package:pomodoro/app/data/services/notification_service.dart';
+import 'package:pomodoro/app/data/services/background_service.dart';
 
 class HomeController extends GetxController {
   final PomodoroService _pomodoroService = Get.find<PomodoroService>();
+  final SoundService _soundService = Get.find<SoundService>();
+  final VibrationService _vibrationService = Get.find<VibrationService>();
+  final NotificationService _notificationService = Get.find<NotificationService>();
+  final BackgroundService _backgroundService = Get.find<BackgroundService>();
 
   // Timer
   Timer? _timer;
@@ -38,6 +46,8 @@ class HomeController extends GetxController {
   @override
   void onClose() {
     _timer?.cancel();
+    _backgroundService.stopTimerBackgroundTask();
+    _notificationService.cancelTimerNotification();
     super.onClose();
   }
 
@@ -70,6 +80,27 @@ class HomeController extends GetxController {
     // Record start time if starting fresh
     if (!isPaused.value) {
       sessionStartTime = DateTime.now();
+      // Play start sound and vibration
+      _soundService.playSound(SoundType.sessionStart);
+      _vibrationService.vibrate(VibrationType.sessionStart);
+      
+      // Show notification for session start
+      _notificationService.showSessionStartNotification(
+        sessionType: currentSessionType.value,
+        sessionTitle: sessionTitle.value,
+        duration: timeRemaining.value,
+      );
+      
+      // Start background task
+      _backgroundService.startTimerBackgroundTask(
+        sessionType: currentSessionType.value,
+        sessionTitle: sessionTitle.value,
+        duration: timeRemaining.value,
+        startTime: sessionStartTime!,
+      );
+    } else {
+      // Resume from pause
+      _vibrationService.vibrate(VibrationType.sessionResume);
     }
 
     isRunning.value = true;
@@ -78,6 +109,34 @@ class HomeController extends GetxController {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (timeRemaining.value > 0) {
         timeRemaining.value--;
+        
+        // Play tick sound if enabled
+        if (_soundService.tickSoundEnabled.value) {
+          _soundService.playSound(SoundType.tick);
+        }
+        
+        // Tick vibration if enabled
+        if (_vibrationService.tickVibrationEnabled.value) {
+          _vibrationService.vibrate(VibrationType.tick);
+        }
+        
+        // Update notification progress
+        _notificationService.updateTimerNotification(
+          sessionType: currentSessionType.value,
+          sessionTitle: sessionTitle.value,
+          timeRemaining: timeRemaining.value,
+          progress: progress,
+        );
+        
+        // Save timer state for background recovery
+        _backgroundService.saveTimerState(
+          sessionType: currentSessionType.value,
+          sessionTitle: sessionTitle.value,
+          timeRemaining: timeRemaining.value,
+          startTime: sessionStartTime!,
+          isRunning: isRunning.value,
+          isPaused: isPaused.value,
+        );
       } else {
         completeSession();
       }
@@ -89,12 +148,26 @@ class HomeController extends GetxController {
 
     _timer?.cancel();
     isPaused.value = true;
+    
+    // Play pause vibration
+    _vibrationService.vibrate(VibrationType.sessionPause);
+    
+    // Cancel timer notification
+    _notificationService.cancelTimerNotification();
+    
+    // Stop background task
+    _backgroundService.stopTimerBackgroundTask();
   }
 
   void resetSession() {
     _timer?.cancel();
     _resetTimer();
     sessionStartTime = null;
+    
+    // Cancel all notifications and background tasks
+    _notificationService.cancelTimerNotification();
+    _backgroundService.stopTimerBackgroundTask();
+    _backgroundService.clearTimerState();
   }
 
   void skipToNextSession() {
@@ -150,9 +223,22 @@ class HomeController extends GetxController {
       _pomodoroService.saveSession(session);
     }
 
-    // Play sound notification (would be implemented with a sound service)
+    // Play completion sound and vibration
+    _soundService.playSound(SoundType.sessionComplete);
+    _vibrationService.vibrate(VibrationType.sessionComplete);
 
-    // Show notification
+    // Show completion notification
+    _notificationService.showSessionCompleteNotification(
+      sessionType: currentSessionType.value,
+      sessionTitle: sessionTitle.value,
+      duration: currentSessionType.value == SessionType.work
+          ? settings.value.workTime * 60 - timeRemaining.value
+          : currentSessionType.value == SessionType.shortBreak
+          ? settings.value.shortBreakTime * 60 - timeRemaining.value
+          : settings.value.longBreakTime * 60 - timeRemaining.value,
+    );
+
+    // Show in-app notification
     Get.snackbar(
       'Session Complete!',
       'Great job! Take a moment to stretch.',
@@ -161,6 +247,10 @@ class HomeController extends GetxController {
       colorText: Colors.white,
       duration: const Duration(seconds: 5),
     );
+
+    // Cancel background tasks
+    _backgroundService.stopTimerBackgroundTask();
+    _backgroundService.clearTimerState();
 
     // Move to next session
     skipToNextSession();
